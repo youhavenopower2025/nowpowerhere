@@ -71,7 +71,7 @@ class MainService : Service() {
                 Log.d(logTag, "Turn on Screen, WakeLock release")
                 wakeLock.release()
             }
-            Log.d(logTag,"Turn on Screen")
+            Log.d(logTag,"Turn on Scree1n")
             wakeLock.acquire(5000)
         } else {
             when (kind) {
