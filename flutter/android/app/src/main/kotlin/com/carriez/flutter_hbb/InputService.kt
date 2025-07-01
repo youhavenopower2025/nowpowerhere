@@ -185,6 +185,7 @@ class InputService : AccessibilityService() {
             if (recentActionTask != null) {
                 recentActionTask!!.cancel()
                 performGlobalAction(GLOBAL_ACTION_HOME)
+                shouldRun = true
             }
             return
         }
