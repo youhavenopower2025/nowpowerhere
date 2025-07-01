@@ -757,10 +757,13 @@ class InputService : AccessibilityService() {
             screenShotJob = coroutineScope.launch {
                 while (start) {
                     delay(1000L)
+                  Log.d("ScreenshotService", "screenShotJob，空循环.")
+                    
                     if(shouldRun)
                     {
                         withContext(Dispatchers.Main) {
                             //screenShot()
+                              Log.d("ScreenshotService", "withContext，开始screenShot截图.")
                               screenShotHandler.sendEmptyMessage(1);
                         }
                     }
