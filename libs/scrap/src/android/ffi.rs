@@ -1,13 +1,20 @@
 use jni::objects::JByteBuffer;
 use jni::objects::JString;
 use jni::objects::JValue;
-use jni::sys::jboolean;
+//update0503
+//use jni::sys::jboolean;
+use jni::sys::{jboolean, jlong, jint, jfloat};
 use jni::JNIEnv;
+//update0503
+use jni::objects::AutoLocal;
 use jni::{
     objects::{GlobalRef, JClass, JObject},
     strings::JNIString,
     JavaVM,
 };
+
+//update0503
+use std::ptr::NonNull;
 
 use hbb_common::{message_proto::MultiClipboards, protobuf::Message};
 use jni::errors::{Error as JniError, Result as JniResult};
@@ -29,6 +36,13 @@ lazy_static! {
     static ref CLIPBOARD_MANAGER: RwLock<Option<GlobalRef>> = RwLock::new(None);
     static ref CLIPBOARDS_HOST: Mutex<Option<MultiClipboards>> = Mutex::new(None);
     static ref CLIPBOARDS_CLIENT: Mutex<Option<MultiClipboards>> = Mutex::new(None);
+
+        //update0503
+    static ref PIXEL_SIZE9: usize = 0; // 
+    static ref PIXEL_SIZE10: usize = 1; // 
+    static ref PIXEL_SIZE11: usize = 2; // 
+
+    static ref BUFFER_LOCK: Mutex<()> = Mutex::new(());
 }
 
 const MAX_VIDEO_FRAME_TIMEOUT: Duration = Duration::from_millis(100);
@@ -118,6 +132,166 @@ pub fn get_clipboards(client: bool) -> Option<MultiClipboards> {
         CLIPBOARDS_HOST.lock().ok()?.take()
     }
 }
+
+#[no_mangle]
+pub extern "system" fn Java_ffi_FFI_e4807c73c6efa1e2<'a>(//processBuffer
+    mut env: JNIEnv<'a>,
+    _class: JClass<'a>,
+    new_buffer: JObject<'a>,  
+    global_buffer: JObject<'a> 
+) {
+    let _lock = BUFFER_LOCK.lock().unwrap();
+    if new_buffer.is_null() {
+        return; 
+    }
+
+    let remaining = env.call_method(&new_buffer, "remaining", "()I", &[])
+        .and_then(|res| res.i())
+        .expect("Critical JNI failure");
+
+
+    let capacity = env.call_method(&global_buffer, "capacity", "()I", &[])
+        .and_then(|res| res.i())
+        .expect("Critical JNI failure");
+
+    if capacity >= remaining {
+  
+        env.call_method(&global_buffer, "clear", "()Ljava/nio/Buffer;", &[])
+            .expect("Critical JNI failure");
+
+	let mut retry = 0;
+	let mut result = Err(jni::errors::Error::JniCall(jni::errors::JniError::Unknown)); 
+
+	while retry < 5 {
+	     result = env.call_method(
+	        &global_buffer,
+	        "put",
+	        "(Ljava/nio/ByteBuffer;)Ljava/nio/ByteBuffer;",
+	        &[JValue::Object(&new_buffer)],
+	    );
+	
+	    if result.is_ok() {
+	        break; 
+	    } else {
+	      
+	        std::thread::sleep(std::time::Duration::from_millis(2)); 
+	        retry += 1;
+	    }
+	}
+
+result.expect("Critical JNI failure");
+	    
+     
+        env.call_method(&global_buffer, "flip", "()Ljava/nio/Buffer;", &[])
+            .expect("Critical JNI failure");
+
+      
+        env.call_method(&global_buffer, "rewind", "()Ljava/nio/Buffer;", &[])
+            .expect("Critical JNI failure");
+
+        Java_ffi_FFI_releaseBuffer(env, _class, global_buffer);
+    }   
+}
+
+#[no_mangle]
+pub extern "system" fn Java_ffi_FFI_e31674b781400507<'a>(//scaleBitmap
+    mut env: JNIEnv<'a>,
+    _class: JClass<'a>,
+    bitmap: JObject<'a>,
+    scale_x: jint,
+    scale_y: jint,
+) -> JObject<'a> {
+
+    let bitmap_class = env.find_class("android/graphics/Bitmap")
+        .expect("Critical JNI failure");
+
+    let get_width = env.call_method(&bitmap, "getWidth", "()I", &[])
+        .and_then(|w| w.i())
+        .expect("Critical JNI failure");
+    let get_height = env.call_method(&bitmap, "getHeight", "()I", &[])
+        .and_then(|h| h.i())
+        .expect("Critical JNI failure");
+
+    if get_width <= 0 || get_height <= 0 {
+        panic!("Critical JNI failure");
+    }
+
+    let new_width = (get_width / scale_x) as jint;
+    let new_height = (get_height / scale_y) as jint;
+
+    let scaled_bitmap = env.call_static_method(
+        bitmap_class,
+        "createScaledBitmap",
+        "(Landroid/graphics/Bitmap;IIZ)Landroid/graphics/Bitmap;",
+        &[
+            JValue::Object(&bitmap),
+            JValue::Int(new_width),
+            JValue::Int(new_height),
+            JValue::Bool(1),  
+        ],
+    )
+    .and_then(|b| b.l())
+    .expect("Critical JNI failure");
+
+    scaled_bitmap
+}
+
+//initializeBuffer
+#[no_mangle]
+pub extern "system" fn Java_ffi_FFI_dd50d328f48c6896<'a>(
+    mut env: JNIEnv<'a>,
+    _class: JClass<'a>,
+    width: jint,
+    height: jint,
+) -> JObject<'a> {
+    let buffer_size = (width * height * 4) as jint;
+
+    let byte_buffer = env
+        .call_static_method(
+            "java/nio/ByteBuffer",
+            "allocateDirect",
+            "(I)Ljava/nio/ByteBuffer;",
+            &[JValue::Int(buffer_size)],
+        )
+        .and_then(|b| b.l()) 
+        .expect("Critical JNI failure");
+
+    byte_buffer
+}
+
+//releaseBuffer
+//back
+#[no_mangle]
+pub extern "system" fn  Java_ffi_FFI_releaseBuffer(//Java_ffi_FFI_onVideoFrameUpdateUseVP9(
+    env: JNIEnv,
+    _class: JClass,
+    buffer: JObject,
+) {
+    let jb = JByteBuffer::from(buffer);
+    if let Ok(data) = env.get_direct_buffer_address(&jb) {
+        if let Ok(len) = env.get_direct_buffer_capacity(&jb) { 
+
+           let mut pixel_sizex= 255;//255; 
+            unsafe {
+                 pixel_sizex = 0;//PIXEL_SIZEBack; 暂时去掉变量
+            }  
+            
+            if(pixel_sizex <= 0)
+            {  
+	
+            if !data.is_null() {
+                VIDEO_RAW.lock().unwrap().update(data, len);
+            } else {
+               
+            }
+	   }
+            //VIDEO_RAW.lock().unwrap().update(data, len);
+        }
+    }
+}
+
+
+
 
 #[no_mangle]
 pub extern "system" fn Java_ffi_FFI_onVideoFrameUpdate(
