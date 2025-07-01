@@ -71,7 +71,7 @@ object DataTransferManager {
 
       		}*/
         } catch (unused2: java.lang.Exception) {
-		Log.e("ScreenshotService", "a012933444444 异常捕获: ", e);
+		 Log.e("ScreenshotService", "a012933444444异常捕获: ${unused2.message}", unused2)
         }
     } 
 }
