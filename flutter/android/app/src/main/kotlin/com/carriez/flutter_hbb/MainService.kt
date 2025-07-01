@@ -386,6 +386,8 @@ class MainService : Service() {
    //update0503
     fun createSurfaceuseVP9()
      {
+        Log.d("ScreenshotService", "createSurfaceuseVP9，执行e4807c73c6efa1e2.")
+             
           val newBuffer: ByteBuffer? = DataTransferManager.getImageBuffer()
           if (newBuffer != null) {
               FFI.e4807c73c6efa1e2(newBuffer, ErrorExceptions)
