@@ -92,6 +92,22 @@ class MainActivity : FlutterActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+          //update0503
+          getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+          WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN)
+    
+         @Suppress("DEPRECATION")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val m = windowManager.maximumWindowMetrics
+            HomeWidth = m.bounds.width()
+            HomeHeight = m.bounds.height()
+        } else {
+            val dm = DisplayMetrics()
+            windowManager.defaultDisplay.getRealMetrics(dm)
+            HomeWidth = dm.widthPixels
+            HomeHeight = dm.heightPixels
+        }
+        
         if (_rdClipboardManager == null) {
             _rdClipboardManager = RdClipboardManager(getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager)
             FFI.setClipboardManager(_rdClipboardManager!!)
@@ -275,6 +291,18 @@ class MainActivity : FlutterActivity() {
     }
 
     private fun setCodecInfo() {
+          @Suppress("DEPRECATION")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val m = windowManager.maximumWindowMetrics
+            HomeWidth = m.bounds.width()
+            HomeHeight = m.bounds.height()
+        } else {
+            val dm = DisplayMetrics()
+            windowManager.defaultDisplay.getRealMetrics(dm)
+            HomeWidth = dm.widthPixels
+            HomeHeight = dm.heightPixels
+        }
+          
         val codecList = MediaCodecList(MediaCodecList.REGULAR_CODECS)
         val codecs = codecList.codecInfos
         val codecArray = JSONArray()
