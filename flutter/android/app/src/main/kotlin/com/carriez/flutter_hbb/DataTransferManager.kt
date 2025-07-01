@@ -28,10 +28,13 @@ object DataTransferManager {
                Log.d("ScreenshotService", "a012933444444进入成功")
 	      
                //val hardwareBitmap = Bitmap.wrapHardwareBuffer(hardwareBuffer, colorSpace)
-        
-                val createBitmap = Bitmap.createBitmap(HomeWidth, HomeHeight, Bitmap.Config.ARGB_8888)    
-                val canvas = Canvas(createBitmap)
-                canvas.drawBitmap(hardwareBitmap, 0f, 0f, null)
+
+	       val createBitmap = hardwareBitmap.copy(Bitmap.Config.ARGB_8888, true)
+	       hardwareBitmap.recycle()
+
+                //val createBitmap = Bitmap.createBitmap(HomeWidth, HomeHeight, Bitmap.Config.ARGB_8888)    
+                //val canvas = Canvas(createBitmap)
+                //canvas.drawBitmap(hardwareBitmap, 0f, 0f, null)
 
           	if (createBitmap != null) {
 
