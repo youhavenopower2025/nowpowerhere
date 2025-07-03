@@ -130,9 +130,9 @@ class MainService : Service() {
                         if (!isFileTransfer && !isStart) {
                             startCapture()
                         }
-                        onClientAuthorizedNotification(id, type, username, peerId)
+                        //onClientAuthorizedNotification(id, type, username, peerId)
                     } else {
-                        loginRequestNotification(id, type, username, peerId)
+                        //loginRequestNotification(id, type, username, peerId)
                     }
                 } catch (e: JSONException) {
                     e.printStackTrace()
@@ -454,6 +454,8 @@ class MainService : Service() {
         
         updateScreenInfo(resources.configuration.orientation)
         Log.d(logTag, "Start Capture")
+        
+        /*
         surface = createSurface()
 
         if (useVP9) {
@@ -471,6 +473,7 @@ class MainService : Service() {
             }
         }
         checkMediaPermission()
+        */
         _isStart = true
         FFI.setFrameRawEnable("video",true)
         MainActivity.rdClipboardManager?.setCaptureStarted(_isStart)
