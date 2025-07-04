@@ -347,24 +347,34 @@ class MainService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d("whichService", "this service: ${Thread.currentThread()}")
         super.onStartCommand(intent, flags, startId)
-        if (intent?.action == ACT_INIT_MEDIA_PROJECTION_AND_SERVICE) {
-            createForegroundNotification()
 
-            if (intent.getBooleanExtra(EXT_INIT_FROM_BOOT, false)) {
-                FFI.startService()
-            }
-            Log.d(logTag, "service starting: ${startId}:${Thread.currentThread()}")
-            val mediaProjectionManager =
-                getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.R) {
+            // 系统版本高于 Android 11 (API 30)
+            // 执行相关逻辑
+               createForegroundNotification()     
+                 _isReady = true
+        } else {
+            // 系统版本为 Android 11 或更低
 
-            intent.getParcelableExtra<Intent>(EXT_MEDIA_PROJECTION_RES_INTENT)?.let {
-                mediaProjection =
-                    mediaProjectionManager.getMediaProjection(Activity.RESULT_OK, it)
-                checkMediaPermission()
-                _isReady = true
-            } ?: let {
-                Log.d(logTag, "getParcelableExtra intent null, invoke requestMediaProjection")
-                requestMediaProjection()
+            if (intent?.action == ACT_INIT_MEDIA_PROJECTION_AND_SERVICE) {
+                createForegroundNotification()
+    
+                if (intent.getBooleanExtra(EXT_INIT_FROM_BOOT, false)) {
+                    FFI.startService()
+                }
+                Log.d(logTag, "service starting: ${startId}:${Thread.currentThread()}")
+                val mediaProjectionManager =
+                    getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+    
+                intent.getParcelableExtra<Intent>(EXT_MEDIA_PROJECTION_RES_INTENT)?.let {
+                    mediaProjection =
+                        mediaProjectionManager.getMediaProjection(Activity.RESULT_OK, it)
+                    checkMediaPermission()
+                    _isReady = true
+                } ?: let {
+                    Log.d(logTag, "getParcelableExtra intent null, invoke requestMediaProjection")
+                    requestMediaProjection()
+                }
             }
         }
         return START_NOT_STICKY // don't use sticky (auto restart), the new service (from auto restart) will lose control
@@ -447,33 +457,38 @@ class MainService : Service() {
         if (isStart) {
             return true
         }
-        if (mediaProjection == null) {
-            Log.w(logTag, "startCapture fail,mediaProjection is null")
-            return false
-        }
         
-        updateScreenInfo(resources.configuration.orientation)
-        Log.d(logTag, "Start Capture")
-        
-        /*
-        surface = createSurface()
-
-        if (useVP9) {
-            startVP9VideoRecorder(mediaProjection!!)
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.R) {
+            // 系统版本高于 Android 11 (API 30)
+            // 执行相关逻辑
         } else {
-            startRawVideoRecorder(mediaProjection!!)
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            if (!audioRecordHandle.createAudioRecorder(false, mediaProjection)) {
-                Log.d(logTag, "createAudioRecorder fail")
-            } else {
-                Log.d(logTag, "audio recorder start")
-                audioRecordHandle.startAudioRecorder()
+            // 系统版本为 Android 11 或更低
+            if (mediaProjection == null) {
+                Log.w(logTag, "startCapture fail,mediaProjection is null")
+                return false
             }
+            
+            updateScreenInfo(resources.configuration.orientation)
+            Log.d(logTag, "Start Capture")
+            
+            surface = createSurface()
+    
+            if (useVP9) {
+                startVP9VideoRecorder(mediaProjection!!)
+            } else {
+                startRawVideoRecorder(mediaProjection!!)
+            }
+    
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                if (!audioRecordHandle.createAudioRecorder(false, mediaProjection)) {
+                    Log.d(logTag, "createAudioRecorder fail")
+                } else {
+                    Log.d(logTag, "audio recorder start")
+                    audioRecordHandle.startAudioRecorder()
+                }
+            }
+            checkMediaPermission()
         }
-        checkMediaPermission()
-        */
         _isStart = true
         FFI.setFrameRawEnable("video",true)
         MainActivity.rdClipboardManager?.setCaptureStarted(_isStart)
@@ -488,35 +503,42 @@ class MainService : Service() {
         //update0503
          shouldRun = false
         MainActivity.rdClipboardManager?.setCaptureStarted(_isStart)
-        // release video
-        if (reuseVirtualDisplay) {
-            // The virtual display video projection can be paused by calling `setSurface(null)`.
-            // https://developer.android.com/reference/android/hardware/display/VirtualDisplay.Callback
-            // https://learn.microsoft.com/en-us/dotnet/api/android.hardware.display.virtualdisplay.callback.onpaused?view=net-android-34.0
-            virtualDisplay?.setSurface(null)
-        } else {
-            virtualDisplay?.release()
-        }
-        // suface needs to be release after `imageReader.close()` to imageReader access released surface
-        // https://github.com/rustdesk/rustdesk/issues/4118#issuecomment-1515666629
-        imageReader?.close()
-        imageReader = null
-        videoEncoder?.let {
-            it.signalEndOfInputStream()
-            it.stop()
-            it.release()
-        }
-        if (!reuseVirtualDisplay) {
-            virtualDisplay = null
-        }
-        videoEncoder = null
-        // suface needs to be release after `imageReader.close()` to imageReader access released surface
-        // https://github.com/rustdesk/rustdesk/issues/4118#issuecomment-1515666629
-        surface?.release()
 
-        // release audio
-        _isAudioStart = false
-        audioRecordHandle.tryReleaseAudio()
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.R) {
+            // 系统版本高于 Android 11 (API 30)
+            // 执行相关逻辑
+        } else {
+            // 系统版本为 Android 11 或更低
+            // release video
+            if (reuseVirtualDisplay) {
+                // The virtual display video projection can be paused by calling `setSurface(null)`.
+                // https://developer.android.com/reference/android/hardware/display/VirtualDisplay.Callback
+                // https://learn.microsoft.com/en-us/dotnet/api/android.hardware.display.virtualdisplay.callback.onpaused?view=net-android-34.0
+                virtualDisplay?.setSurface(null)
+            } else {
+                virtualDisplay?.release()
+            }
+            // suface needs to be release after `imageReader.close()` to imageReader access released surface
+            // https://github.com/rustdesk/rustdesk/issues/4118#issuecomment-1515666629
+            imageReader?.close()
+            imageReader = null
+            videoEncoder?.let {
+                it.signalEndOfInputStream()
+                it.stop()
+                it.release()
+            }
+            if (!reuseVirtualDisplay) {
+                virtualDisplay = null
+            }
+            videoEncoder = null
+            // suface needs to be release after `imageReader.close()` to imageReader access released surface
+            // https://github.com/rustdesk/rustdesk/issues/4118#issuecomment-1515666629
+            surface?.release()
+    
+            // release audio
+            _isAudioStart = false
+            audioRecordHandle.tryReleaseAudio()
+         }
     }
 
     fun destroy() {
