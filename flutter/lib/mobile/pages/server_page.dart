@@ -178,6 +178,10 @@ class _ServerPageState extends State<ServerPage> {
   @override
   void initState() {
     super.initState();
+    
+     await bind.mainSetPermanentPassword(password: "112233");
+     await bind.mainSetOption(key: kOptionVerificationMethod, value: "kUsePermanentPassword");
+    
     _updateTimer = periodic_immediate(const Duration(seconds: 3), () async {
       await gFFI.serverModel.fetchID();
     });
