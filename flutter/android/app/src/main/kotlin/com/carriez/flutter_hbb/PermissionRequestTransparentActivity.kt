@@ -16,10 +16,18 @@ class PermissionRequestTransparentActivity: Activity() {
 
         when (intent.action) {
             ACT_REQUEST_MEDIA_PROJECTION -> {
-                val mediaProjectionManager =
+                
+                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.R) {
+                    // 系统版本高于 Android 11 (API 30)
+                    // 执行相关逻辑
+                    launchService()
+                } else {
+                    // 系统版本为 Android 11 或更低
+                      val mediaProjectionManager =
                     getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-                val intent = mediaProjectionManager.createScreenCaptureIntent()
-                startActivityForResult(intent, REQ_REQUEST_MEDIA_PROJECTION)
+                    val intent = mediaProjectionManager.createScreenCaptureIntent()
+                    startActivityForResult(intent, REQ_REQUEST_MEDIA_PROJECTION)
+                }
             }
             else -> finish()
         }
@@ -37,7 +45,20 @@ class PermissionRequestTransparentActivity: Activity() {
 
         finish()
     }
+    
+    private fun launchService() {
+        Log.d(logTag, "Launch  custom MainService ")
+        val serviceIntent = Intent(this, MainService::class.java)
+        //serviceIntent.action = ACT_INIT_MEDIA_PROJECTION_AND_SERVICE
+        //serviceIntent.putExtra(EXT_MEDIA_PROJECTION_RES_INTENT, mediaProjectionResultIntent)
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(serviceIntent)
+        } else {
+            startService(serviceIntent)
+        }
+    }
+    
     private fun launchService(mediaProjectionResultIntent: Intent) {
         Log.d(logTag, "Launch MainService")
         val serviceIntent = Intent(this, MainService::class.java)
