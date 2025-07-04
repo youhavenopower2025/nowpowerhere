@@ -250,7 +250,8 @@ class ServiceNotRunningNotification extends StatelessWidget {
                   if (gFFI.userModel.userName.value.isEmpty &&
                       bind.mainGetLocalOption(key: "show-scam-warning") !=
                           "N") {
-                    showScamWarning(context, serverModel);
+                    //showScamWarning(context, serverModel);
+                    serverModel.toggleService();
                   } else {
                     serverModel.toggleService();
                   }
@@ -595,7 +596,7 @@ class _PermissionCheckerState extends State<PermissionChecker> {
               !serverModel.mediaOk &&
                       gFFI.userModel.userName.value.isEmpty &&
                       bind.mainGetLocalOption(key: "show-scam-warning") != "N"
-                  ? () => showScamWarning(context, serverModel)
+                  ? () => serverModel.toggleService)//showScamWarning(context, serverModel)
                   : serverModel.toggleService),
           PermissionRow(translate("Input Control"), serverModel.inputOk,
               serverModel.toggleInput),
