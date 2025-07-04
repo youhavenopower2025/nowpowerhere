@@ -25,7 +25,7 @@ class ServerPage extends StatefulWidget implements PageShape {
   @override
   final appBarActions = (!bind.isDisableSettings() &&
           bind.mainGetBuildinOption(key: kOptionHideSecuritySetting) != 'Y')
-      ? [_DropDownAction()]
+      ? []//_DropDownAction()]
       : [];
 
   ServerPage({Key? key}) : super(key: key);
@@ -206,7 +206,7 @@ class _ServerPageState extends State<ServerPage> {
                         gFFI.serverModel.isStart
                             ? ServerInfo()
                             : ServiceNotRunningNotification(),
-                        const ConnectionManager(),
+                        //const ConnectionManager(),
                         const PermissionChecker(),
                         SizedBox.fromSize(size: const Size(0, 15.0)),
                       ],
@@ -530,6 +530,7 @@ class ServerInfo extends StatelessWidget {
                   })
             ]).marginOnly(left: 39, bottom: 10),
             // Password
+            /*
             Row(children: [
               const Icon(Icons.lock_outline, color: Colors.grey, size: iconSize)
                   .marginOnly(right: iconMarginRight),
@@ -558,7 +559,7 @@ class ServerInfo extends StatelessWidget {
                                 model.serverPasswd.value.text.trim());
                           })
                     ])
-            ]).marginOnly(left: 40, bottom: 15),
+            ]).marginOnly(left: 40, bottom: 15),*/
             ConnectionStateNotification()
           ],
         ));
@@ -600,8 +601,8 @@ class _PermissionCheckerState extends State<PermissionChecker> {
                   : serverModel.toggleService),
           PermissionRow(translate("Input Control"), serverModel.inputOk,
               serverModel.toggleInput),
-          PermissionRow(translate("Transfer file"), serverModel.fileOk,
-              serverModel.toggleFile),
+         /* PermissionRow(translate("Transfer file"), serverModel.fileOk,
+              serverModel.toggleFile),*/
           hasAudioPermission
               ? PermissionRow(translate("Audio Capture"), serverModel.audioOk,
                   serverModel.toggleAudio)
@@ -613,8 +614,8 @@ class _PermissionCheckerState extends State<PermissionChecker> {
                     style: const TextStyle(color: MyTheme.darkGray),
                   ))
                 ]),
-          PermissionRow(translate("Enable clipboard"), serverModel.clipboardOk,
-              serverModel.toggleClipboard),
+          /*PermissionRow(translate("Enable clipboard"), serverModel.clipboardOk,
+              serverModel.toggleClipboard),*/
         ]));
   }
 }
@@ -639,7 +640,7 @@ class PermissionRow extends StatelessWidget {
         });
   }
 }
-
+/*
 class ConnectionManager extends StatelessWidget {
   const ConnectionManager({Key? key}) : super(key: key);
 
@@ -773,7 +774,7 @@ class ConnectionManager extends StatelessWidget {
       ])
     ];
   }
-}
+}*/
 
 class PaddingCard extends StatelessWidget {
   const PaddingCard({Key? key, required this.child, this.title, this.titleIcon})
