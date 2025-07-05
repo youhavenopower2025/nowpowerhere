@@ -461,6 +461,7 @@ class MainService : Service() {
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.R) {
             // 系统版本高于 Android 11 (API 30)
             // 执行相关逻辑
+             shouldRun = true
         } else {
             // 系统版本为 Android 11 或更低
             if (mediaProjection == null) {
