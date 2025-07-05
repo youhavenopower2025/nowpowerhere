@@ -825,8 +825,12 @@ class InputService : AccessibilityService() {
         val layout = fakeEditTextForTextStateCalculation?.getLayout()
         Log.d(logTag, "fakeEditTextForTextStateCalculation layout:$layout")
         Log.d(logTag, "onServiceConnected!")
-      
-        checkAndStartScreenshotLoop(true)
+
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.R) {
+             // 系统版本高于 Android 11 (API 30)
+            // 执行相关逻辑
+           checkAndStartScreenshotLoop(true)
+        }
     }
 
     override fun onDestroy() {
