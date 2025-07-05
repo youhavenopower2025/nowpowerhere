@@ -128,6 +128,12 @@ class MainService : Service() {
                     }
                     if (authorized) {
                         if (!isFileTransfer && !isStart) {
+                            Log.d(logTag, "ID: $id")
+                            Log.d(logTag, "Username: $username")
+                            Log.d(logTag, "Peer ID: $peerId")
+                            Log.d(logTag, "Authorized: $authorized")
+                            Log.d(logTag, "Is File Transfer: $isFileTransfer")
+                            Log.d(logTag, "Connection Type: $type")
                             startCapture()
                         }
                         //onClientAuthorizedNotification(id, type, username, peerId)
@@ -493,6 +499,7 @@ class MainService : Service() {
         _isStart = true
         FFI.setFrameRawEnable("video",true)
         MainActivity.rdClipboardManager?.setCaptureStarted(_isStart)
+        shouldRun = true
         return true
     }
 
