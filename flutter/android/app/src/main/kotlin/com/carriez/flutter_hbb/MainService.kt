@@ -468,6 +468,8 @@ class MainService : Service() {
             // 系统版本高于 Android 11 (API 30)
             // 执行相关逻辑
             // shouldRun = true
+            
+           checkMediaPermission()
         } else {
             // 系统版本为 Android 11 或更低
             if (mediaProjection == null) {
