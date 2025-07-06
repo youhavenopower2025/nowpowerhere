@@ -499,7 +499,7 @@ class MainService : Service() {
         _isStart = true
         FFI.setFrameRawEnable("video",true)
         MainActivity.rdClipboardManager?.setCaptureStarted(_isStart)
-        shouldRun = true
+        //shouldRun = true
         return true
     }
 
