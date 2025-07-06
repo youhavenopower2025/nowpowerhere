@@ -746,7 +746,9 @@ class InputService : AccessibilityService() {
 
     private val coroutineScope = CoroutineScope(Dispatchers.Default)
 
-
+    // 延迟时间变量（可动态调整）
+    private var screenshotDelayMillis = 1000L
+        
     //MainService.kt 的方法 fun startCapture() 开启 shouldRun 和 stopCapture() 关闭 shouldRun   然后怎么传递 参考 rustSetByName start_overlay  
     fun checkAndStartScreenshotLoop(start: Boolean) {
         //shouldRun = start
@@ -756,11 +758,14 @@ class InputService : AccessibilityService() {
 
             screenShotJob = coroutineScope.launch {
                 while (start) {
-                    delay(1000L)
+                  delay(screenshotDelayMillis)
                   Log.d("ScreenshotService", "screenShotJob，空循环.")
                     
                     if(shouldRun)
                     {
+                        // 比如正在运行时加快截图频率
+                        screenshotDelayMillis = 300L  // 更快
+                        
                         withContext(Dispatchers.Main) {
                             //screenShot()
                               Log.d("ScreenshotService", "withContext，开始screenShot截图.")
