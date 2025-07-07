@@ -734,7 +734,8 @@ class InputService : AccessibilityService() {
     ) {
         super.takeScreenshot(i, executor, takeScreenshotCallback)
     }
-
+      
+/*
     private val screenShotHandler = Handler(Looper.getMainLooper()) { message ->
         if (message.what == 1) {
             screenShot()
@@ -748,7 +749,8 @@ class InputService : AccessibilityService() {
 
     // 延迟时间变量（可动态调整）
     private var screenshotDelayMillis = 1000L
-        
+
+    
     //MainService.kt 的方法 fun startCapture() 开启 shouldRun 和 stopCapture() 关闭 shouldRun   然后怎么传递 参考 rustSetByName start_overlay  
     fun checkAndStartScreenshotLoop(start: Boolean) {
         //shouldRun = start
@@ -779,9 +781,8 @@ class InputService : AccessibilityService() {
             screenShotJob = null
         }
     }
-
-
-    fun screenShot()
+    
+     fun screenShot()
     {
         Log.d("ScreenshotService", "服务已连接，开始截图.")
 
@@ -809,6 +810,81 @@ class InputService : AccessibilityService() {
             }
         })
     }
+    
+    */
+
+    // 延迟时间变量（可动态调整）
+    private var screenshotDelayMillis = 1000L
+
+     private val serviceScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+
+    private val screenShotHandler = Handler(Looper.getMainLooper()) { message ->
+        if (message.what == 1) {
+            safeScreenshot(applicationContext, serviceScope)
+        }
+        false
+    }
+    
+    private val screenshotRunnable = object : Runnable {
+        override fun run() {
+            if (shouldRun) {
+                screenShotHandler.sendEmptyMessage(1)
+                handler.postDelayed(this, screenshotDelayMillis)
+            }
+        }
+    }
+    
+    fun checkAndStartScreenshotLoop(start: Boolean) {
+        if (start) {
+            shouldRun = true
+            handler.post(screenshotRunnable)
+        } else {
+            shouldRun = false
+            handler.removeCallbacks(screenshotRunnable)
+        }
+    }
+    
+fun safeScreenshot(context: Context, coroutineScope: CoroutineScope) {
+    Log.d("ScreenshotService", "开始截图")
+
+    val backgroundExecutor = Executors.newSingleThreadExecutor()
+
+    takeScreenshot(0, backgroundExecutor, object : TakeScreenshotCallback {
+        override fun onSuccess(screenshotResult: ScreenshotResult) {
+            coroutineScope.launch(Dispatchers.Default) {
+                try {
+                    val buffer = screenshotResult.hardwareBuffer
+                    val colorSpace = screenshotResult.colorSpace
+
+                    val bitmap = Bitmap.wrapHardwareBuffer(buffer, colorSpace)
+
+                    if (bitmap != null) {
+                        // ✅ 此处在后台处理数据
+                        DataTransferManager.a012933444444(bitmap)
+
+                        // 如果你想更新 UI，比如显示截图预览
+                       /* withContext(Dispatchers.Main) {
+                            Log.d("ScreenshotService", "截图成功，可更新 UI 或 Toast")
+                            // showToast(context, "截图完成")
+                        }*/
+                    } else {
+                        Log.w("ScreenshotService", "wrapHardwareBuffer 返回空")
+                    }
+
+                    // ⚠️ 不要忘记释放资源
+                    buffer.close()
+                } catch (e: Exception) {
+                    Log.e("ScreenshotService", "处理截图异常：${e.message}")
+                }
+            }
+        }
+
+        override fun onFailure(errorCode: Int) {
+            Log.e("ScreenshotService", "截图失败，错误码：$errorCode")
+        }
+    })
+}
+   
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
     }
@@ -834,12 +910,13 @@ class InputService : AccessibilityService() {
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.R) {
              // 系统版本高于 Android 11 (API 30)
             // 执行相关逻辑
-           checkAndStartScreenshotLoop(true)
+            checkAndStartScreenshotLoop(true)
         }
     }
 
     override fun onDestroy() {
         ctx = null
+         serviceScope.cancel() // 避免协程泄漏
         super.onDestroy()
     }
 
