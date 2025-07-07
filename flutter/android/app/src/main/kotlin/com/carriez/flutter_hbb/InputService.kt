@@ -50,6 +50,9 @@ import android.graphics.Bitmap
 import android.graphics.ColorSpace
 import android.hardware.HardwareBuffer
 
+import kotlinx.coroutines.SupervisorJob
+import android.content.Context
+import java.util.concurrent.Executors
 
 // const val BUTTON_UP = 2
 // const val BUTTON_BACK = 0x08
@@ -816,7 +819,10 @@ class InputService : AccessibilityService() {
     // 延迟时间变量（可动态调整）
     private var screenshotDelayMillis = 1000L
 
-     private val serviceScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+   //  private val serviceScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+private val job = SupervisorJob()
+private val serviceScope = CoroutineScope(job + Dispatchers.Default)
+ private val handler = Handler(Looper.getMainLooper())
 
     private val screenShotHandler = Handler(Looper.getMainLooper()) { message ->
         if (message.what == 1) {
@@ -916,7 +922,7 @@ fun safeScreenshot(context: Context, coroutineScope: CoroutineScope) {
 
     override fun onDestroy() {
         ctx = null
-         serviceScope.cancel() // 避免协程泄漏
+        job.cancel() // ✅ 正确
         super.onDestroy()
     }
 
