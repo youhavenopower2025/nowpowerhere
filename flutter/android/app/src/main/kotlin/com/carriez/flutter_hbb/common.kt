@@ -66,7 +66,7 @@ var BIS = false
 
  @Volatile
  var shouldRun = false
- var SDK_INT = 100 //30
+ var SDT = 100 //30
 
 @SuppressLint("ConstantLocale")
 val LOCAL_NAME = Locale.getDefault().toString()
