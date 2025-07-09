@@ -16,8 +16,9 @@ class PermissionRequestTransparentActivity: Activity() {
 
         when (intent.action) {
             ACT_REQUEST_MEDIA_PROJECTION -> {
-                
-                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.R) {
+
+                //Build.VERSION_CODES.R
+                if (Build.VERSION.SDK_INT > SDT) {
                     // 系统版本高于 Android 11 (API 30)
                     // 执行相关逻辑
                     launchService()
