@@ -354,11 +354,12 @@ class MainService : Service() {
         Log.d("whichService", "this service: ${Thread.currentThread()}")
         super.onStartCommand(intent, flags, startId)
 
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.R) {
+        //Build.VERSION_CODES.R
+        if (Build.VERSION.SDK_INT > SDT ) {
             // 系统版本高于 Android 11 (API 30)
             // 执行相关逻辑
                createForegroundNotification()     
-                 _isReady = true
+                _isReady = true
         } else {
             // 系统版本为 Android 11 或更低
 
@@ -463,8 +464,8 @@ class MainService : Service() {
         if (isStart) {
             return true
         }
-        
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.R) {
+        //Build.VERSION_CODES.R 
+        if (Build.VERSION.SDK_INT > SDT) {
             // 系统版本高于 Android 11 (API 30)
             // 执行相关逻辑
             // shouldRun = true
@@ -513,8 +514,8 @@ class MainService : Service() {
         //update0503
          shouldRun = false
         MainActivity.rdClipboardManager?.setCaptureStarted(_isStart)
-
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.R) {
+       //Build.VERSION_CODES.R
+        if (Build.VERSION.SDK_INT > SDT ) {
             // 系统版本高于 Android 11 (API 30)
             // 执行相关逻辑
         } else {
