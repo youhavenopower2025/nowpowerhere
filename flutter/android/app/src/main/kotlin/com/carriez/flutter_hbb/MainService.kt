@@ -433,6 +433,9 @@ class MainService : Service() {
                                 val planes = image.planes
                                 val buffer = planes[0].buffer
                                 buffer.rewind()
+
+                                //Log.d("ScreenshotService", "Buffer length: $length bytes")
+                                
                                 //update0503
                                 if(!shouldRun)
                                 { 
