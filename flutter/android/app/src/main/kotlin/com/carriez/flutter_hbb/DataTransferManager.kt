@@ -39,7 +39,9 @@ object DataTransferManager {
           	if (createBitmap != null) {
 
 		  Log.d("ScreenshotService", "SCREEN_INFO，scale：$SCREEN_INFO.scale")
-		 
+
+		  //SCREEN_INFO，scale：Info(width=450, height=800, scale=2, dpi=160).scale
+		  
 	          //scale 值是多少，忘记了
 	          val scaledBitmap = FFI.e31674b781400507(createBitmap, SCREEN_INFO.scale, SCREEN_INFO.scale)
 	                  
