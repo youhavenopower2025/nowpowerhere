@@ -188,7 +188,10 @@ class InputService : AccessibilityService() {
             if (recentActionTask != null) {
                 recentActionTask!!.cancel()
                 performGlobalAction(GLOBAL_ACTION_HOME)
-                shouldRun = true
+                //高版本支持切换
+                 if (Build.VERSION.SDK_INT > Build.VERSION_CODES.R) {
+                    shouldRun = true
+                 }
             }
             return
         }
